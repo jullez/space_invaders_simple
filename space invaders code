@@ -1,0 +1,423 @@
+package com.mygdx.game;
+
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
+
+
+
+
+public class MyGdxGame
+  extends ApplicationAdapter
+{
+  boolean shouldfire = false;
+  SpriteBatch batch;
+  Texture character;
+  Texture shot;
+  Texture boom;
+  Texture alien1_1;
+  Texture alien1_2;
+  Texture alien2_1;
+  Texture alien2_2;
+  Texture alien3_1;
+  Texture alien3_2;
+  Texture alien_ufo;
+  int x = 512;
+  BitmapFont font;
+  int y = 0;
+  boolean gameOver = false;
+  int[] isGone = new int[9];
+  int invX = 1;
+  int round = 1;
+  int killcount = 0;
+  int shotspeed = 10;
+  int leftcheck = 0;
+  int rightcheck = 8;
+  int goOnce = 0;
+  int vx = 3;
+  boolean soundplayed = false;
+  int score = 0;
+  int shotscreen = 0; Sprite player;
+  Sprite playershot;
+  Sprite explosion;
+  Sprite[] row1;
+  Sprite[] row2;
+  Sprite[] row3;
+  Sprite[] row4;
+  Sprite[] row5;
+  Rectangle[] bounds1;
+  
+  public void create() {
+    Gdx.graphics.setWindowedMode(1024, 900);
+    this.font = new BitmapFont();
+    this.explosionsound = Gdx.audio.newSound(Gdx.files.internal("explosion.mp3"));
+    this.shotsound = Gdx.audio.newSound(Gdx.files.internal("shot.mp3"));
+    this.go1 = Gdx.audio.newSound(Gdx.files.internal("gameover.mp3"));
+    this.go2 = Gdx.audio.newSound(Gdx.files.internal("goVoice.mp3"));
+    this.music = Gdx.audio.newMusic(Gdx.files.internal("backing track.mp3"));
+    
+    this.batch = new SpriteBatch();
+    
+    this.character = new Texture("player.png");
+    this.player = new Sprite(this.character);
+    this.player.setPosition(this.x, this.y);
+    this.player.setScale(2.0F);
+    
+    this.shot = new Texture("player shot.png");
+    this.playershot = new Sprite(this.shot);
+    this.playershot.setScale(2.0F);
+    
+    this.boom = new Texture("blast.png");
+    this.explosion = new Sprite(this.boom);
+    this.explosion.setScale(2.0F);
+    
+    this.alien1_1 = new Texture("alien b-1.png");
+    
+    this.alien2_1 = new Texture("alien a-1.png");
+    this.alien3_1 = new Texture("alien c-1.png");
+
+    
+    this.row1 = new Sprite[10];
+    this.row2 = new Sprite[10];
+    this.row3 = new Sprite[10];
+    this.row4 = new Sprite[10];
+    this.row5 = new Sprite[10];
+    this.bounds1 = new Rectangle[10];
+    this.bounds2 = new Rectangle[10];
+    this.bounds3 = new Rectangle[10];
+    this.bounds4 = new Rectangle[10];
+    this.bounds5 = new Rectangle[10];
+    
+    for (int i = 0; i < 9; i++) {
+      this.row1[i] = new Sprite(this.alien1_1);
+      this.row1[i].setPosition((100 * (i + 1) - 10), 800.0F);
+      this.row1[i].setScale(2.0F);
+      this.bounds1[i] = this.row1[i].getBoundingRectangle();
+      
+      this.row2[i] = new Sprite(this.alien2_1);
+      this.row2[i].setPosition((100 * (i + 1)), 700.0F);
+      this.row2[i].setScale(2.0F);
+      this.bounds2[i] = this.row2[i].getBoundingRectangle();
+      
+      this.row3[i] = new Sprite(this.alien2_1);
+      this.row3[i].setPosition((100 * (i + 1)), 600.0F);
+      this.row3[i].setScale(2.0F);
+      this.bounds3[i] = this.row3[i].getBoundingRectangle();
+      
+      this.row4[i] = new Sprite(this.alien3_1);
+      this.row4[i].setPosition((100 * (i + 1)), 500.0F);
+      this.row4[i].setScale(2.0F);
+      this.bounds4[i] = this.row4[i].getBoundingRectangle();
+      
+      this.row5[i] = new Sprite(this.alien3_1);
+      this.row5[i].setPosition((100 * (i + 1)), 400.0F);
+      this.row5[i].setScale(2.0F);
+      this.bounds5[i] = this.row5[i].getBoundingRectangle();
+      
+      if (i == 0) {
+        this.row1[i].setPosition(105.0F, 800.0F);
+        
+        this.row2[i].setPosition(115.0F, 700.0F);
+        
+        this.row3[i].setPosition(115.0F, 600.0F);
+        
+        this.row4[i].setPosition(115.0F, 500.0F);
+        
+        this.row5[i].setPosition(115.0F, 400.0F);
+      } 
+    } 
+  }
+  Rectangle[] bounds2; Rectangle[] bounds3; Rectangle[] bounds4; Rectangle[] bounds5; Sound shotsound; Sound explosionsound; Sound go1; Sound go2; Music music; Rectangle shotbox;
+  
+  public void render() {
+    Gdx.gl.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+    Gdx.gl.glClear(16384);
+    this.music.play();
+    this.music.setLooping(true);
+    if (this.shotscreen == 0) {
+      this.playershot.setPosition(this.player.getX(), this.player.getY() + 5.0F);
+    }
+    
+    if (Gdx.input.isKeyPressed(22) || Gdx.input.isKeyPressed(32)) {
+      if (this.player.getX() <= 1024.0F) {
+        this.player.translateX(this.vx);
+      } else {
+        
+        this.player.translateX(-this.vx);
+      }
+    
+    }
+    else if (Gdx.input.isKeyPressed(29) || Gdx.input.isKeyPressed(21)) {
+      if (this.player.getX() >= 0.0F) {
+        this.player.translateX(-this.vx);
+      } else {
+        
+        this.player.translateX(this.vx);
+      } 
+    } 
+    
+    if (Gdx.input.isKeyPressed(62)) {
+      this.shouldfire = true;
+    }
+    
+    if (this.shouldfire && !this.gameOver) {
+      fire();
+    }
+    
+    this.batch.begin();
+    this.font.draw(this.batch, "score: " + this.score, 500.0F, 875.0F);
+    this.font.draw(this.batch, "round: " + this.round, 250.0F, 875.0F);
+    for (int i = 0; i < 9; i++) {
+      this.row1[i].draw(this.batch);
+      this.row2[i].draw(this.batch);
+      this.row3[i].draw(this.batch);
+      this.row4[i].draw(this.batch);
+      this.row5[i].draw(this.batch);
+    } 
+    
+    this.player.draw(this.batch);
+    this.batch.end();
+    for (int i = 0; i < 9; i++) {
+      if (this.shotscreen == 1 && this.bounds1[i].overlaps(this.shotbox)) {
+        this.explosion.setPosition(this.bounds1[i].getX() + 25.0F, this.bounds1[i].getY() + 25.0F);
+        
+        this.batch.begin();
+        this.explosion.draw(this.batch);
+        this.batch.end();
+        this.explosionsound.play();
+        this.row1[i].translateY(-4000.0F);
+        
+        this.isGone[i] = 1;
+        this.score += 100;
+        this.playershot.translateY(8000.0F);
+        this.bounds1[i] = this.row1[i].getBoundingRectangle();
+        this.killcount++;
+      }
+      else if (this.shotscreen == 1 && this.bounds2[i].overlaps(this.shotbox)) {
+        this.explosion.setPosition(this.bounds2[i].getX() + 25.0F, this.bounds2[i].getY() + 25.0F);
+        this.batch.begin();
+        this.explosion.draw(this.batch);
+        this.batch.end();
+        this.explosionsound.play();
+        this.score += 100;
+        this.row2[i].translateY(-4000.0F);
+        this.playershot.translateY(8000.0F);
+        this.bounds2[i] = this.row2[i].getBoundingRectangle();
+        this.killcount++;
+      }
+      else if (this.shotscreen == 1 && this.bounds3[i].overlaps(this.shotbox)) {
+        this.explosion.setPosition(this.bounds3[i].getX() + 25.0F, this.bounds3[i].getY() + 25.0F);
+        this.batch.begin();
+        this.explosion.draw(this.batch);
+        this.batch.end();
+        this.explosionsound.play();
+        this.score += 100;
+        this.row3[i].translateY(-4000.0F);
+        this.playershot.translateY(8000.0F);
+        this.bounds3[i] = this.row3[i].getBoundingRectangle();
+        this.killcount++;
+      }
+      else if (this.shotscreen == 1 && this.bounds4[i].overlaps(this.shotbox)) {
+        this.explosion.setPosition(this.bounds4[i].getX() + 25.0F, this.bounds4[i].getY() + 25.0F);
+        this.batch.begin();
+        this.explosion.draw(this.batch);
+        this.batch.end();
+        this.explosionsound.play();
+        this.score += 100;
+        this.row4[i].translateY(-4000.0F);
+        this.playershot.translateY(8000.0F);
+        this.bounds4[i] = this.row4[i].getBoundingRectangle();
+        this.killcount++;
+      }
+      else if (this.shotscreen == 1 && this.bounds5[i].overlaps(this.shotbox)) {
+        this.explosion.setPosition(this.bounds5[i].getX() + 25.0F, this.bounds5[i].getY() + 25.0F);
+        this.batch.begin();
+        this.explosion.draw(this.batch);
+        this.batch.end();
+        this.explosionsound.play();
+        this.score += 100;
+        this.row5[i].translateY(-4000.0F);
+        this.playershot.translateY(800.0F);
+        this.bounds5[i] = this.row5[i].getBoundingRectangle();
+        this.killcount++;
+      } 
+    } 
+    for (int i = 0; i < 9; i++) {
+      this.row1[i].translateX(this.invX);
+      this.row2[i].translateX(this.invX);
+      this.row3[i].translateX(this.invX);
+      this.row4[i].translateX(this.invX);
+      this.row5[i].translateX(this.invX);
+      
+      this.bounds1[i] = this.row1[i].getBoundingRectangle();
+      this.bounds2[i] = this.row2[i].getBoundingRectangle();
+      this.bounds3[i] = this.row3[i].getBoundingRectangle();
+      this.bounds4[i] = this.row4[i].getBoundingRectangle();
+      this.bounds5[i] = this.row5[i].getBoundingRectangle();
+      
+      if (this.row1[this.leftcheck].getX() <= 0.0F || this.row1[this.rightcheck].getX() >= 900.0F) {
+        
+        for (int j = 0; j < 9; j++) {
+          this.row1[j].translateY(-3.0F);
+          this.row2[j].translateY(-3.0F);
+          this.row3[j].translateY(-3.0F);
+          this.row4[j].translateY(-3.0F);
+          this.row5[j].translateY(-3.0F);
+        } 
+        
+        this.invX *= -1;
+      } 
+    } 
+
+
+    
+    for (int i = 0; i < 9; ) {
+      int j; if (i < 8) {
+        j = i + 1;
+      } else {
+        j = i;
+      }  if (this.isGone[0] == 1 && 
+        this.isGone[j] == 1) {
+        this.leftcheck = j;
+        
+        i++;
+      } 
+      break;
+    } 
+    for (int i = 9; i > 0 && 
+      this.isGone[8] == 1 && 
+      this.isGone[i - 1] == 1; i--) {
+      this.rightcheck = i - 1;
+    }
+
+
+
+    
+    if (this.killcount > 44) {
+      this.invX *= 2;
+      this.shotspeed *= 2;
+      this.vx *= 2;
+      this.score += 1000;
+      this.round++;
+      for (int i = 0; i < this.isGone.length; i++) {
+        this.isGone[i] = 0;
+      }
+      this.leftcheck = 0;
+      this.rightcheck = 8;
+      
+      for (int i = 0; i < 9; i++) {
+
+        
+        this.row1[i] = new Sprite(this.alien1_1);
+        this.row1[i].setPosition((100 * (i + 1) - 10), 800.0F);
+        this.row1[i].setScale(2.0F);
+        this.bounds1[i] = this.row1[i].getBoundingRectangle();
+        
+        this.row2[i] = new Sprite(this.alien2_1);
+        this.row2[i].setPosition((100 * (i + 1)), 700.0F);
+        this.row2[i].setScale(2.0F);
+        this.bounds2[i] = this.row2[i].getBoundingRectangle();
+        
+        this.row3[i] = new Sprite(this.alien2_1);
+        this.row3[i].setPosition((100 * (i + 1)), 600.0F);
+        this.row3[i].setScale(2.0F);
+        this.bounds3[i] = this.row3[i].getBoundingRectangle();
+        
+        this.row4[i] = new Sprite(this.alien3_1);
+        this.row4[i].setPosition((100 * (i + 1)), 500.0F);
+        this.row4[i].setScale(2.0F);
+        this.bounds4[i] = this.row4[i].getBoundingRectangle();
+        
+        this.row5[i] = new Sprite(this.alien3_1);
+        this.row5[i].setPosition((100 * (i + 1)), 400.0F);
+        this.row5[i].setScale(2.0F);
+        this.bounds5[i] = this.row5[i].getBoundingRectangle();
+        
+        if (i == 0) {
+          this.row1[i].setPosition(105.0F, 800.0F);
+          
+          this.row2[i].setPosition(115.0F, 700.0F);
+          
+          this.row3[i].setPosition(115.0F, 600.0F);
+          
+          this.row4[i].setPosition(115.0F, 500.0F);
+          
+          this.row5[i].setPosition(115.0F, 400.0F);
+        } 
+        
+        this.killcount = 0;
+      } 
+      
+      for (int i = 0; i < 9; i++) {
+        if ((this.row1[i].getY() < 100.0F && this.row1[i].getY() > -200.0F) || (this.row2[i].getY() < 100.0F && this.row2[i].getY() > -200.0F) || (this.row3[i].getY() < 100.0F && this.row3[i].getY() > -200.0F) || (this.row4[i].getY() < 100.0F && this.row4[i].getY() > -200.0F) || (this.row5[i].getY() < 100.0F && this.row5[i].getY() > -200.0F)) {
+          
+          this.gameOver = true;
+          this.row1[i].translate(5000.0F, -5000.0F);
+          this.row2[i].translate(5000.0F, -5000.0F);
+          this.row3[i].translate(5000.0F, -5000.0F);
+          this.row4[i].translate(5000.0F, -5000.0F);
+          this.row5[i].translate(5000.0F, -5000.0F);
+          this.player.translate(5000.0F, -5000.0F);
+        } 
+      } 
+      if (this.gameOver) {
+        this.music.stop();
+        this.batch.begin();
+        this.font.draw(this.batch, "Game Over", 512.0F, 450.0F);
+        this.batch.end();
+        if (this.goOnce == 0) {
+          this.go1.play();
+          this.go2.play();
+          this.goOnce = 1;
+        } 
+      } 
+    } 
+  }
+
+
+
+
+
+
+
+
+  
+  public void fire() {
+    this.shotscreen = 1;
+    if (!this.soundplayed) {
+      this.shotsound.play();
+    }
+    this.soundplayed = true;
+    if (this.playershot.getY() < 900.0F) {
+      this.shotbox = this.playershot.getBoundingRectangle();
+      this.playershot.translateY(this.shotspeed);
+      this.batch.begin();
+      this.playershot.draw(this.batch);
+      this.batch.end();
+    
+    }
+    else if (this.playershot.getY() >= 900.0F) {
+      this.explosion.setPosition(this.playershot.getX(), this.playershot.getY() - 30.0F);
+      this.batch.begin();
+      this.explosion.draw(this.batch);
+      this.batch.end();
+      this.explosionsound.play();
+      this.shotscreen = 0;
+      this.soundplayed = false;
+      this.shouldfire = false;
+    } 
+  }
+
+  
+  public void dispose() {
+    this.batch.dispose();
+    this.character.dispose();
+    this.explosionsound.dispose();
+  }
+}
